@@ -5,11 +5,28 @@ module Fluent
     class Error < StandardError; end
 
     Fluent::Plugin.register_output('flatten', self)
+
+    include Fluent::HandleTagNameMixin
     config_param :key, :string
+
+    def configure(conf)
+      super
+
+      if !@remove_tag_prefix and !@remove_tag_suffix and !@add_tag_prefix and !@add_tag_suffix
+        raise ConfigError, "out_flatten: Set remove_tag_prefix, remove_tag_suffix, add_tag_prefix or add_tag_suffix."
+      end
+    end
 
     def emit(tag, es, chain)
       es.each do |time, record|
-        Engine.emit(tag, time, flatten(record))
+        _tag    = tag.clone
+        flatten = flatten(record)
+        filter_record(_tag, time, flatten)
+        if tag != _tag
+          Engine.emit(tag, time, flatten)
+        else
+          $log.warn "Drop record #{record} tag '#{tag}' was not replaced. Can't emit record, cause infinity looping. Set remove_tag_prefix, remove_tag_suffix, add_tag_prefix or add_tag_suffix correctly."
+        end
       end
 
       chain.next

@@ -14,6 +14,7 @@ When you have a config as below:
 <match test.**>
   type flatten
   key  foo
+  add_tag_prefix flattened
 </match>
 ```
 
