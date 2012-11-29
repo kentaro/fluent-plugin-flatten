@@ -27,7 +27,9 @@ class FlattenOutputTest < Test::Unit::TestCase
       d.emit( 'foo' => '{"bar" : "baz"}', 'hoge' => 'fuga' )
       d.emit( 'foo' => '{"bar" : {"qux" : "quux", "hoe" : "poe" }, "baz" : "bazz" }', 'hoge' => 'fuga' )
     end
-    emits = d.emits
+
+    emits          = d.emits
+#    expected_emits = d.expected_emits
 
     assert_equal      3, emits[0][2].count
     assert_equal  'baz', emits[0][2]['foo.bar']
@@ -36,5 +38,8 @@ class FlattenOutputTest < Test::Unit::TestCase
     assert_equal 'quux', emits[1][2]['foo.bar.qux']
     assert_equal  'poe', emits[1][2]['foo.bar.hoe']
     assert_equal 'bazz', emits[1][2]['foo.baz']
+
+    assert_equal 'flattened.test', emits[0][0]
+    assert_equal 'flattened.test', emits[1][0]
   end
 end
