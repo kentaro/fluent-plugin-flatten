@@ -21,7 +21,7 @@ When you have a config as below:
 And you feed such a value into fluentd:
 
 ```
-{
+"test" => {
   "foo"  => '{"bar" : {"qux" : "quux", "hoe" : "poe" }, "baz" : "bazz" }',
   "hoge" => "fuga"
 }
@@ -30,7 +30,7 @@ And you feed such a value into fluentd:
 Then you'll get:
 
 ```
-{
+"flattened.test" => {
   "foo"  => '{"bar" : {"qux" : "quux", "hoe" : "poe" }, "baz" : "bazz" }',
   "hoge" => "fuga",
 
@@ -48,6 +48,12 @@ That is, JSON-formatted string in the value of the key `foo` is flattened and no
 
 The `key` is used to point a key whose value contains JSON-formatted
 string.
+
+### remove_tag_prefix, remove_tag_suffix, add_tag_prefix, add_tag_suffix
+
+These params are included from `Fluent::HandleTagNameMixin`. See that code for details.
+
+You must add at least one of these params.
 
 ## Installation
 
