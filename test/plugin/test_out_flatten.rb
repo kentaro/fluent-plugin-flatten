@@ -27,9 +27,7 @@ class FlattenOutputTest < Test::Unit::TestCase
       d.emit( 'foo' => '{"bar" : "baz"}', 'hoge' => 'fuga' )
       d.emit( 'foo' => '{"bar" : {"qux" : "quux", "hoe" : "poe" }, "baz" : "bazz" }', 'hoge' => 'fuga' )
     end
-
-    emits          = d.emits
-#    expected_emits = d.expected_emits
+    emits = d.emits
 
     assert_equal      3, emits[0][2].count
     assert_equal  'baz', emits[0][2]['foo.bar']
