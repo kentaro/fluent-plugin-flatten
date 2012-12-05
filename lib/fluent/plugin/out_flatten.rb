@@ -39,7 +39,7 @@ module Fluent
     end
 
     def flatten(record)
-      flattend = {}
+      flattened = {}
 
       if record.has_key?(key)
         hash      = JSON.parse(record[key])
@@ -63,10 +63,10 @@ module Fluent
           flattened
         end
 
-        flattend  = processor.call(key, hash)
+        flattened  = processor.call(key, hash)
       end
 
-      flattend
+      flattened
     end
   end
 end
