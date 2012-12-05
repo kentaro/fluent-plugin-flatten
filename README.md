@@ -4,17 +4,20 @@
 
 ### FlattenOutput
 
-Fluentd output plugin to flatten JSON-formatted string values in records to top level key/value-s.
+Fluentd plugin to extract values for nested key paths and re-emit them as flat tag/record pairs.
 
 ## Synopsis
 
-When you have a config as below:
+Imagin you have a config as below:
 
 ```
 <match test.**>
   type flatten
+
   key  foo
-  add_tag_prefix flattened.
+  add_tag_prefix    flattened.
+  remove_tag_prefix test.
+  inner_key         value_for_flat_key
 </match>
 ```
 
@@ -27,20 +30,20 @@ And you feed such a value into fluentd:
 }
 ```
 
-Then you'll get:
+Then you'll get re-emmited tag/record-s below:
 
 ```
-"flattened.test" => {
-  "foo"  => '{"bar" : {"qux" : "quux", "hoe" : "poe" }, "baz" : "bazz" }',
-  "hoge" => "fuga",
-
-  "foo.bar.qux" => "quux",
-  "foo.bar.hoe" => "poe",
-  "foo.baz"     => "bazz"
-}
+"flattened.foo.bar.qux" => { "value_for_flat_key" => "quux" }
+"flattened.foo.bar.hoe" => { "value_for_flat_key" => "poe"  }
+"flattened.foo.baz"     => { "value_for_flat_key" => "bazz" }
 ```
 
-That is, JSON-formatted string in the value of the key `foo` is flattened and now put into the top level of the hash.
+That is to say:
+
+  1. The JSON-formatted string in the value related to the key `foo` is inflated to a `Hash`.
+  2. The values are extracted as to be related to the nested key paths (`foo.bar.baz`).
+  3. This plugin re-emits them as new tag/record pairs.
+  4. Key/value pairs whose keys don't match `foo` are ignored (`"hoge" => "fuga"`).
 
 ## Configuration
 
@@ -54,6 +57,10 @@ string.
 These params are included from `Fluent::HandleTagNameMixin`. See that code for details.
 
 You must add at least one of these params.
+
+### inner_key
+
+This plugin sets `value` for this option as a default if it's not set.
 
 ## Installation
 

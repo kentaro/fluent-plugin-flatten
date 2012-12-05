@@ -4,27 +4,34 @@ module Fluent
   class FlattenOutput < Output
     include Fluent::HandleTagNameMixin
     class Error < StandardError; end
+
     Fluent::Plugin.register_output('flatten', self)
 
-    config_param :key, :string
+    config_param :key,       :string
+    config_param :inner_key, :string, :default => 'value'
 
     def configure(conf)
       super
 
-      if !self.remove_tag_prefix && !self.remove_tag_suffix && !self.add_tag_prefix && !self.add_tag_suffix
-        raise ConfigError, "out_flatten: Set remove_tag_prefix, remove_tag_suffix, add_tag_prefix or add_tag_suffix."
+      if (
+          !remove_tag_prefix &&
+          !remove_tag_suffix &&
+          !add_tag_prefix    &&
+          !add_tag_suffix
+      )
+        raise ConfigError, "out_flatten: At least one of remove_tag_prefix/remove_tag_suffix/add_tag_prefix/add_tag_suffix is required to be set"
       end
     end
 
     def emit(tag, es, chain)
       es.each do |time, record|
-        _tag      = tag.clone
         flattened = flatten(record)
-        filter_record(_tag, time, flattened)
-        if tag != _tag
-          Engine.emit(_tag, time, flattened)
-        else
-          $log.warn "Drop record #{record} tag '#{tag}' was not replaced. Can't emit record, cause infinity looping. Set remove_tag_prefix, remove_tag_suffix, add_tag_prefix or add_tag_suffix correctly."
+
+        flattened.each do |keypath, value|
+          tag_with_keypath = [tag.clone, keypath].join('.')
+          filter_record(tag_with_keypath, time, value)
+
+          Engine.emit(tag_with_keypath, time, value)
         end
       end
 
@@ -32,31 +39,34 @@ module Fluent
     end
 
     def flatten(record)
-      if record.has_key?(@key)
-        hash   = JSON.parse(record[@key])
-        record = record.merge(_flatten(@key, hash))
-      end
+      flattend = {}
 
-      record
-    end
+      if record.has_key?(key)
+        hash      = JSON.parse(record[key])
+        processor = lambda do |root, hash|
+          unless hash.is_a?(Hash)
+            raise Error.new('The value to be flattened must be a Hash: #{hash}')
+          end
 
-    def _flatten(root, hash)
-      unless hash.is_a?(Hash)
-        raise Error.new('The value to be flattened must be a Hash: #{hash}')
-      end
+          flattened = {}
 
-      flattened = {}
-      hash.each do |path, value|
-        key = [root, path].join('.')
+          hash.each do |path, value|
+            keypath = [root, path].join('.')
 
-        if value.is_a?(String)
-          flattened[key] = value
-        else
-          flattened = flattened.merge(_flatten(key, value))
+            if value.is_a?(Hash)
+              flattened = flattened.merge(processor.call(keypath, value))
+            else
+              flattened[keypath] = { inner_key => value }
+            end
+          end
+
+          flattened
         end
+
+        flattend  = processor.call(key, hash)
       end
 
-      flattened
+      flattend
     end
   end
 end
