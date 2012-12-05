@@ -4,8 +4,8 @@ Gem::Specification.new do |gem|
   gem.authors       = ['Kentaro Kuribayashi']
   gem.email         = ['kentarok@gmail.com']
   gem.homepage      = 'http://github.com/kentaro/fluent-plugin-flatten'
-  gem.description   = %q{Fluentd plugin to flatten JSON-formatted string values to top level key/value-s.}
-  gem.summary       = %q{Fluentd plugin to flatten JSON-formatted string values to top level key/value-s.}
+  gem.description   = %q{Fluentd plugin to extract values for nested key paths and re-emit them as flat tag/record pairs.}
+  gem.summary       = %q{Fluentd plugin to extract values for nested key paths and re-emit them as flat tag/record pairs.}
 
   gem.files         = `git ls-files`.split($\)
   gem.executables   = gem.files.grep(%r{^bin/}).map{ |f| File.basename(f) }
