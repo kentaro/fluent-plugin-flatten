@@ -52,10 +52,13 @@ class FlattenOutputTest < Test::Unit::TestCase
     flattened = d.instance.flatten({ 'foo' => '{"bar" : "baz"}', 'hoge' => 'fuga' })
     assert_equal({ 'foo.bar' => { 'value' => 'baz' } }, flattened)
 
-    # when not hash value is passed
-    assert_raise(Fluent::FlattenOutput::Error) do
-      d.instance.flatten({ 'foo' => '["bar", "baz"]' })
-    end
+    # when empty value is passed
+    flattened = d.instance.flatten({ 'foo' => '' })
+    assert_equal({}, flattened)
+
+    # when invalid json value is passed
+    flattened = d.instance.flatten({ 'foo' => '-' })
+    assert_equal({}, flattened)
   end
 
   def test_emit

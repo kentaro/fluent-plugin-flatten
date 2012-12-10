@@ -41,14 +41,18 @@ module Fluent
     def flatten(record)
       flattened = {}
 
-      if record.has_key?(key)
-        hash      = JSON.parse(record[key])
-        processor = lambda do |root, hash|
-          unless hash.is_a?(Hash)
-            raise Error.new('The value to be flattened must be a Hash: #{hash}')
-          end
+      if record.has_key?(key) && !record[key].empty?
+        hash = nil
 
+        begin
+          hash = JSON.parse(record[key])
+        rescue JSON::ParserError
+          return flattened
+        end
+
+        processor = lambda do |root, hash|
           flattened = {}
+          return flattened unless hash.is_a?(Hash)
 
           hash.each do |path, value|
             keypath = [root, path].join('.')
