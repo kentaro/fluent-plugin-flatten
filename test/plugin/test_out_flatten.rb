@@ -52,6 +52,11 @@ class FlattenOutputTest < Test::Unit::TestCase
     flattened = d.instance.flatten({ 'foo' => '{"bar" : "baz"}', 'hoge' => 'fuga' })
     assert_equal({ 'foo.bar' => { 'value' => 'baz' } }, flattened)
 
+    # XXX work-around
+    # fluentd seems to escape json value excessively
+    flattened = d.instance.flatten({ 'foo' => '{\"bar\" : \"baz\"}' })
+    assert_equal({ 'foo.bar' => { 'value' => 'baz' } }, flattened)
+
     # when empty value is passed
     flattened = d.instance.flatten({ 'foo' => '' })
     assert_equal({}, flattened)

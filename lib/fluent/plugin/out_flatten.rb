@@ -45,7 +45,10 @@ module Fluent
         hash = nil
 
         begin
-          hash = JSON.parse(record[key])
+          # XXX work-around
+          # fluentd seems to escape json value excessively
+          json = record[key].gsub(/\\"/, '"')
+          hash = JSON.parse(json)
         rescue JSON::ParserError
           return flattened
         end
