@@ -37,6 +37,21 @@ class FlattenOutputTest < Test::Unit::TestCase
     assert_equal /^test\./,            d2.instance.remove_tag_prefix
     assert_equal 'value_for_flat_key', d2.instance.inner_key
 
+    # when `parse_json` is false
+    d3 = create_driver(%[
+      key               foo
+      add_tag_prefix    flattened.
+      remove_tag_prefix test.
+      inner_key         value_for_flat_key
+      parse_json        false
+    ])
+
+    assert_equal 'foo',                d3.instance.key
+    assert_equal 'flattened.',         d3.instance.add_tag_prefix
+    assert_equal /^test\./,            d3.instance.remove_tag_prefix
+    assert_equal 'value_for_flat_key', d3.instance.inner_key
+    assert_equal false,         d3.instance.parse_json
+
     # when mandatory keys not set
     assert_raise(Fluent::ConfigError) do
       create_driver(%[
@@ -67,30 +82,64 @@ class FlattenOutputTest < Test::Unit::TestCase
   end
 
   def test_emit
-    d = create_driver
+    # test1 default config
+    d1 = create_driver
 
-    d.run do
-      d.emit( 'foo' => '{"bar" : "baz"}', 'hoge' => 'fuga' )
-      d.emit( 'foo' => '{"bar" : {"qux" : "quux", "hoe" : "poe" }, "baz" : "bazz" }', 'hoge' => 'fuga' )
+    d1.run do
+      d1.emit( 'foo' => '{"bar" : "baz"}', 'hoge' => 'fuga' )
+      d1.emit( 'foo' => '{"bar" : {"qux" : "quux", "hoe" : "poe" }, "baz" : "bazz" }', 'hoge' => 'fuga' )
     end
-    emits = d.emits
+    emits1 = d1.emits
 
-    assert_equal 4, emits.count
+    assert_equal 4, emits1.count
 
     # ["flattened.foo.bar", 1354689632, {"value"=>"baz"}]
-    assert_equal     'flattened.foo.bar', emits[0][0]
-    assert_equal                   'baz', emits[0][2]['value']
+    assert_equal     'flattened.foo.bar', emits1[0][0]
+    assert_equal                   'baz', emits1[0][2]['value']
 
     # ["flattened.foo.bar.qux", 1354689632, {"value"=>"quux"}]
-    assert_equal 'flattened.foo.bar.qux', emits[1][0]
-    assert_equal                  'quux', emits[1][2]['value']
+    assert_equal 'flattened.foo.bar.qux', emits1[1][0]
+    assert_equal                  'quux', emits1[1][2]['value']
 
     # ["flattened.foo.bar.hoe", 1354689632, {"value"=>"poe"}]
-    assert_equal 'flattened.foo.bar.hoe', emits[2][0]
-    assert_equal                   'poe', emits[2][2]['value']
+    assert_equal 'flattened.foo.bar.hoe', emits1[2][0]
+    assert_equal                   'poe', emits1[2][2]['value']
 
     # ["flattened.foo.bar.baz", 1354689632, {"value"=>"bazz"}]
-    assert_equal     'flattened.foo.baz', emits[3][0]
-    assert_equal                  'bazz', emits[3][2]['value']
+    assert_equal     'flattened.foo.baz', emits1[3][0]
+    assert_equal                  'bazz', emits1[3][2]['value']
+
+    # test2 parse_json is set false 
+    d2 = create_driver(%[
+      key               foo 
+      add_tag_prefix    flattened.
+      remove_tag_prefix test.
+      parse_json        false
+    ])
+
+    d2.run do
+      d2.emit( 'foo' => {'bar' => 'baz'}, 'hoge' => 'fuga' )
+      d2.emit( 'foo' => {'bar' => {'qux' => 'quux', 'hoe' => 'poe' }, 'baz' => 'bazz' }, 'hoge' => 'fuga' )
+    end
+    emits2 = d2.emits
+
+    assert_equal 4, emits2.count
+
+    # ["flattened.foo.bar", 1354689632, {"value"=>"baz"}]
+    assert_equal     'flattened.foo.bar', emits2[0][0]
+    assert_equal                   'baz', emits2[0][2]['value']
+
+    # ["flattened.foo.bar.qux", 1354689632, {"value"=>"quux"}]
+    assert_equal 'flattened.foo.bar.qux', emits2[1][0]
+    assert_equal                  'quux', emits2[1][2]['value']
+
+    # ["flattened.foo.bar.hoe", 1354689632, {"value"=>"poe"}]
+    assert_equal 'flattened.foo.bar.hoe', emits2[2][0]
+    assert_equal                   'poe', emits2[2][2]['value']
+
+    # ["flattened.foo.bar.baz", 1354689632, {"value"=>"bazz"}]
+    assert_equal     'flattened.foo.baz', emits2[3][0]
+    assert_equal                  'bazz', emits2[3][2]['value']
+
   end
 end
