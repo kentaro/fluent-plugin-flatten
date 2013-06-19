@@ -7,8 +7,9 @@ module Fluent
 
     Fluent::Plugin.register_output('flatten', self)
 
-    config_param :key,       :string
-    config_param :inner_key, :string, :default => 'value'
+    config_param :key,        :string
+    config_param :inner_key,  :string, :default => 'value'
+    config_param :parse_json, :bool,   :default => true 
 
     def configure(conf)
       super
@@ -45,10 +46,14 @@ module Fluent
         hash = nil
 
         begin
-          # XXX work-around
-          # fluentd seems to escape json value excessively
-          json = record[key].gsub(/\\"/, '"')
-          hash = JSON.parse(json)
+          if parse_json
+            # XXX work-around
+            # fluentd seems to escape json value excessively
+            json = record[key].gsub(/\\"/, '"')
+            hash = JSON.parse(json)
+          else
+            hash = record[key]
+          end
         rescue JSON::ParserError
           return flattened
         end
