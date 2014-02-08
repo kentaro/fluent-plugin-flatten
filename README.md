@@ -1,4 +1,4 @@
-# fluent-plugin-flatten
+# fluent-plugin-flatten, a plugin for [Fluentd](http://fluentd.org)
 
 ## Component
 
