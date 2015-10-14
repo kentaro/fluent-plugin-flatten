@@ -7,6 +7,11 @@ module Fluent
 
     Fluent::Plugin.register_output('flatten', self)
 
+    # Define `router` method of v0.12 to support v0.10 or earlier
+    unless method_defined?(:router)
+      define_method("router") { Fluent::Engine }
+    end
+
     config_param :key,        :string
     config_param :inner_key,  :string, :default => 'value'
     config_param :parse_json, :bool,   :default => true 
