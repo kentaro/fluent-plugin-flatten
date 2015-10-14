@@ -32,7 +32,7 @@ module Fluent
           tag_with_keypath = [tag.clone, keypath].join('.')
           filter_record(tag_with_keypath, time, value)
 
-          Engine.emit(tag_with_keypath, time, value)
+          router.emit(tag_with_keypath, time, value)
         end
       end
 
