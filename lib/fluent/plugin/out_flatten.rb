@@ -7,6 +7,11 @@ module Fluent
 
     Fluent::Plugin.register_output('flatten', self)
 
+    # Define `router` method of v0.12 to support v0.10 or earlier
+    unless method_defined?(:router)
+      define_method("router") { Fluent::Engine }
+    end
+
     config_param :key,        :string
     config_param :inner_key,  :string, :default => 'value'
     config_param :parse_json, :bool,   :default => true 
@@ -32,7 +37,7 @@ module Fluent
           tag_with_keypath = [tag.clone, keypath].join('.')
           filter_record(tag_with_keypath, time, value)
 
-          Engine.emit(tag_with_keypath, time, value)
+          router.emit(tag_with_keypath, time, value)
         end
       end
 
