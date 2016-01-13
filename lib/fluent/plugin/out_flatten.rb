@@ -12,9 +12,16 @@ module Fluent
       define_method("router") { Fluent::Engine }
     end
 
-    config_param :key,        :string
-    config_param :inner_key,  :string, :default => 'value'
-    config_param :parse_json, :bool,   :default => true 
+    config_param :key,        :string,
+                 :desc => <<-DESC
+The key is used to point a key whose value contains JSON-formatted string.
+DESC
+    config_param :inner_key,  :string, :default => 'value',
+                 :desc => <<-DESC
+This plugin sets `value` for this option as a default if it's not set.
+DESC
+    config_param :parse_json, :bool,   :default => true,
+                 :desc => "Parse json record."
 
     def configure(conf)
       super
