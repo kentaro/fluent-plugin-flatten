@@ -12,7 +12,7 @@ Imagin you have a config as below:
 
 ```
 <match test.**>
-  type flatten
+  @type flatten
 
   key  foo
   add_tag_prefix    flattened.
