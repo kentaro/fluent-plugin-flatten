@@ -22,6 +22,8 @@ This plugin sets `value` for this option as a default if it's not set.
 DESC
     config_param :parse_json, :bool,   :default => true,
                  :desc => "Parse json record."
+    config_param :replace_space_in_tag, :string,   :default => nil,
+                 :desc => "Replaces spaces in the resulting tag with the key passed"
 
     def configure(conf)
       super
@@ -43,8 +45,11 @@ DESC
         flattened.each do |keypath, value|
           tag_with_keypath = [tag.clone, keypath].join('.')
           filter_record(tag_with_keypath, time, value)
-
-          router.emit(tag_with_keypath, time, value)
+          if @replace_space_in_tag
+            router.emit(tag_with_keypath.gsub(/\s+/, @replace_space_in_tag), time, value)
+          else
+            router.emit(tag_with_keypath, time, value)
+          end
         end
       end
 
