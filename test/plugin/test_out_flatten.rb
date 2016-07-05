@@ -111,35 +111,44 @@ class FlattenOutputTest < Test::Unit::TestCase
 
     # test2 parse_json is set false 
     d2 = create_driver(%[
-      key               foo 
-      add_tag_prefix    flattened.
-      remove_tag_prefix test.
-      parse_json        false
+      key                  foo 
+      add_tag_prefix       flattened.
+      remove_tag_prefix    test.
+      parse_json           false
+      replace_space_in_tag _
     ])
 
     d2.run do
       d2.emit( 'foo' => {'bar' => 'baz'}, 'hoge' => 'fuga' )
       d2.emit( 'foo' => {'bar' => {'qux' => 'quux', 'hoe' => 'poe' }, 'baz' => 'bazz' }, 'hoge' => 'fuga' )
+      d2.emit( 'foo' => {'bar hoge' => 'baz', 'hoe baz' => 'poe'}, 'hoge' => 'fuga' )
     end
     emits2 = d2.emits
 
-    assert_equal 4, emits2.count
+    assert_equal 6, emits2.count
 
     # ["flattened.foo.bar", 1354689632, {"value"=>"baz"}]
-    assert_equal     'flattened.foo.bar', emits2[0][0]
-    assert_equal                   'baz', emits2[0][2]['value']
+    assert_equal          'flattened.foo.bar', emits2[0][0]
+    assert_equal                        'baz', emits2[0][2]['value']
 
-    # ["flattened.foo.bar.qux", 1354689632, {"value"=>"quux"}]
-    assert_equal 'flattened.foo.bar.qux', emits2[1][0]
-    assert_equal                  'quux', emits2[1][2]['value']
+    # ["flattened.foo.bar.qux_qux", 1354689632, {"value"=>"quux"}]
+    assert_equal      'flattened.foo.bar.qux', emits2[1][0]
+    assert_equal                       'quux', emits2[1][2]['value']
 
     # ["flattened.foo.bar.hoe", 1354689632, {"value"=>"poe"}]
-    assert_equal 'flattened.foo.bar.hoe', emits2[2][0]
-    assert_equal                   'poe', emits2[2][2]['value']
+    assert_equal      'flattened.foo.bar.hoe', emits2[2][0]
+    assert_equal                        'poe', emits2[2][2]['value']
 
     # ["flattened.foo.bar.baz", 1354689632, {"value"=>"bazz"}]
-    assert_equal     'flattened.foo.baz', emits2[3][0]
-    assert_equal                  'bazz', emits2[3][2]['value']
+    assert_equal          'flattened.foo.baz', emits2[3][0]
+    assert_equal                       'bazz', emits2[3][2]['value']
 
+    # ["flattened.foo.bar_hoge", 1354689632, {"value"=>"baz"}]
+    assert_equal     'flattened.foo.bar_hoge', emits2[4][0]
+    assert_equal                        'baz', emits2[4][2]['value']
+
+    # ["flattened.foo.hoe_baz", 1354689632, {"value"=>"baz"}]
+    assert_equal      'flattened.foo.hoe_baz', emits2[5][0]
+    assert_equal                        'poe', emits2[5][2]['value']
   end
 end
