@@ -16,16 +16,16 @@ class FlattenOutputTest < Test::Unit::TestCase
   end
 
   sub_test_case "configure" do
-    def test_configure
-      # when `inner_key` option is not set
+    test "when `inner_key` option is not set" do
       d1 = create_driver
 
       assert_equal 'foo',                d1.instance.key
       assert_equal 'flattened.',         d1.instance.add_tag_prefix
       assert_equal /^test\./,            d1.instance.remove_tag_prefix
       assert_equal 'value',              d1.instance.inner_key          # default value
+    end
 
-      # when `inner_key` is set
+     test "when `inner_key` is set" do
       d2 = create_driver(%[
         key               foo
         add_tag_prefix    flattened.
@@ -37,8 +37,9 @@ class FlattenOutputTest < Test::Unit::TestCase
       assert_equal 'flattened.',         d2.instance.add_tag_prefix
       assert_equal /^test\./,            d2.instance.remove_tag_prefix
       assert_equal 'value_for_flat_key', d2.instance.inner_key
+     end
 
-      # when `parse_json` is false
+     test "when `parse_json` is false" do
       d3 = create_driver(%[
         key               foo
         add_tag_prefix    flattened.
@@ -52,14 +53,16 @@ class FlattenOutputTest < Test::Unit::TestCase
       assert_equal /^test\./,            d3.instance.remove_tag_prefix
       assert_equal 'value_for_flat_key', d3.instance.inner_key
       assert_equal false,         d3.instance.parse_json
+     end
 
-      # when mandatory keys not set
+     test "mandatory parameters are missing" do
       assert_raise(Fluent::ConfigError) do
         create_driver(%[
           key        foo
           inner_key  value_for_keypath
         ])
       end
+     end
     end
   end
 
