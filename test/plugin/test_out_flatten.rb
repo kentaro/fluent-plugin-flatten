@@ -96,75 +96,76 @@ class FlattenOutputTest < Test::Unit::TestCase
   end
 
   sub_test_case "emit" do
-  def test_emit
-    # test1 default config
-    d1 = create_driver
+    test "default config" do
+      # test1 default config
+      d1 = create_driver
 
-    d1.run(default_tag: "test") do
-      d1.feed( 'foo' => '{"bar" : "baz"}', 'hoge' => 'fuga' )
-      d1.feed( 'foo' => '{"bar" : {"qux" : "quux", "hoe" : "poe" }, "baz" : "bazz" }', 'hoge' => 'fuga' )
+      d1.run(default_tag: "test") do
+        d1.feed( 'foo' => '{"bar" : "baz"}', 'hoge' => 'fuga' )
+        d1.feed( 'foo' => '{"bar" : {"qux" : "quux", "hoe" : "poe" }, "baz" : "bazz" }', 'hoge' => 'fuga' )
+      end
+      events1 = d1.events
+
+      assert_equal 4, events1.count
+
+      # ["flattened.foo.bar", 1354689632, {"value"=>"baz"}]
+      assert_equal     'flattened.foo.bar', events1[0][0]
+      assert_equal                   'baz', events1[0][2]['value']
+
+      # ["flattened.foo.bar.qux", 1354689632, {"value"=>"quux"}]
+      assert_equal 'flattened.foo.bar.qux', events1[1][0]
+      assert_equal                  'quux', events1[1][2]['value']
+
+      # ["flattened.foo.bar.hoe", 1354689632, {"value"=>"poe"}]
+      assert_equal 'flattened.foo.bar.hoe', events1[2][0]
+      assert_equal                   'poe', events1[2][2]['value']
+
+      # ["flattened.foo.bar.baz", 1354689632, {"value"=>"bazz"}]
+      assert_equal     'flattened.foo.baz', events1[3][0]
+      assert_equal                  'bazz', events1[3][2]['value']
     end
-    events1 = d1.events
 
-    assert_equal 4, events1.count
+    test "parse_json is set false" do
+      d = create_driver(%[
+        key                  foo
+        add_tag_prefix       flattened.
+        remove_tag_prefix    test.
+        parse_json           false
+        replace_space_in_tag _
+      ])
 
-    # ["flattened.foo.bar", 1354689632, {"value"=>"baz"}]
-    assert_equal     'flattened.foo.bar', events1[0][0]
-    assert_equal                   'baz', events1[0][2]['value']
+      d.run(default_tag: "test") do
+        d.feed( 'foo' => {'bar' => 'baz'}, 'hoge' => 'fuga' )
+        d.feed( 'foo' => {'bar' => {'qux' => 'quux', 'hoe' => 'poe' }, 'baz' => 'bazz' }, 'hoge' => 'fuga' )
+        d.feed( 'foo' => {'bar hoge' => 'baz', 'hoe baz' => 'poe'}, 'hoge' => 'fuga' )
+      end
+      events2 = d.events
 
-    # ["flattened.foo.bar.qux", 1354689632, {"value"=>"quux"}]
-    assert_equal 'flattened.foo.bar.qux', events1[1][0]
-    assert_equal                  'quux', events1[1][2]['value']
+      assert_equal 6, events2.count
 
-    # ["flattened.foo.bar.hoe", 1354689632, {"value"=>"poe"}]
-    assert_equal 'flattened.foo.bar.hoe', events1[2][0]
-    assert_equal                   'poe', events1[2][2]['value']
+      # ["flattened.foo.bar", 1354689632, {"value"=>"baz"}]
+      assert_equal          'flattened.foo.bar', events2[0][0]
+      assert_equal                        'baz', events2[0][2]['value']
 
-    # ["flattened.foo.bar.baz", 1354689632, {"value"=>"bazz"}]
-    assert_equal     'flattened.foo.baz', events1[3][0]
-    assert_equal                  'bazz', events1[3][2]['value']
+      # ["flattened.foo.bar.qux_qux", 1354689632, {"value"=>"quux"}]
+      assert_equal      'flattened.foo.bar.qux', events2[1][0]
+      assert_equal                       'quux', events2[1][2]['value']
 
-    # test2 parse_json is set false 
-    d2 = create_driver(%[
-      key                  foo 
-      add_tag_prefix       flattened.
-      remove_tag_prefix    test.
-      parse_json           false
-      replace_space_in_tag _
-    ])
+      # ["flattened.foo.bar.hoe", 1354689632, {"value"=>"poe"}]
+      assert_equal      'flattened.foo.bar.hoe', events2[2][0]
+      assert_equal                        'poe', events2[2][2]['value']
 
-    d2.run(default_tag: "test") do
-      d2.feed( 'foo' => {'bar' => 'baz'}, 'hoge' => 'fuga' )
-      d2.feed( 'foo' => {'bar' => {'qux' => 'quux', 'hoe' => 'poe' }, 'baz' => 'bazz' }, 'hoge' => 'fuga' )
-      d2.feed( 'foo' => {'bar hoge' => 'baz', 'hoe baz' => 'poe'}, 'hoge' => 'fuga' )
+      # ["flattened.foo.bar.baz", 1354689632, {"value"=>"bazz"}]
+      assert_equal          'flattened.foo.baz', events2[3][0]
+      assert_equal                       'bazz', events2[3][2]['value']
+
+      # ["flattened.foo.bar_hoge", 1354689632, {"value"=>"baz"}]
+      assert_equal     'flattened.foo.bar_hoge', events2[4][0]
+      assert_equal                        'baz', events2[4][2]['value']
+
+      # ["flattened.foo.hoe_baz", 1354689632, {"value"=>"baz"}]
+      assert_equal      'flattened.foo.hoe_baz', events2[5][0]
+      assert_equal                        'poe', events2[5][2]['value']
     end
-    events2 = d2.events
-
-    assert_equal 6, events2.count
-
-    # ["flattened.foo.bar", 1354689632, {"value"=>"baz"}]
-    assert_equal          'flattened.foo.bar', events2[0][0]
-    assert_equal                        'baz', events2[0][2]['value']
-
-    # ["flattened.foo.bar.qux_qux", 1354689632, {"value"=>"quux"}]
-    assert_equal      'flattened.foo.bar.qux', events2[1][0]
-    assert_equal                       'quux', events2[1][2]['value']
-
-    # ["flattened.foo.bar.hoe", 1354689632, {"value"=>"poe"}]
-    assert_equal      'flattened.foo.bar.hoe', events2[2][0]
-    assert_equal                        'poe', events2[2][2]['value']
-
-    # ["flattened.foo.bar.baz", 1354689632, {"value"=>"bazz"}]
-    assert_equal          'flattened.foo.baz', events2[3][0]
-    assert_equal                       'bazz', events2[3][2]['value']
-
-    # ["flattened.foo.bar_hoge", 1354689632, {"value"=>"baz"}]
-    assert_equal     'flattened.foo.bar_hoge', events2[4][0]
-    assert_equal                        'baz', events2[4][2]['value']
-
-    # ["flattened.foo.hoe_baz", 1354689632, {"value"=>"baz"}]
-    assert_equal      'flattened.foo.hoe_baz', events2[5][0]
-    assert_equal                        'poe', events2[5][2]['value']
-  end
   end
 end
