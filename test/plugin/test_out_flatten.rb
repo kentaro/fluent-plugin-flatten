@@ -16,51 +16,51 @@ class FlattenOutputTest < Test::Unit::TestCase
   end
 
   sub_test_case "configure" do
-  def test_configure
-    # when `inner_key` option is not set
-    d1 = create_driver
+    def test_configure
+      # when `inner_key` option is not set
+      d1 = create_driver
 
-    assert_equal 'foo',                d1.instance.key
-    assert_equal 'flattened.',         d1.instance.add_tag_prefix
-    assert_equal /^test\./,            d1.instance.remove_tag_prefix
-    assert_equal 'value',              d1.instance.inner_key          # default value
+      assert_equal 'foo',                d1.instance.key
+      assert_equal 'flattened.',         d1.instance.add_tag_prefix
+      assert_equal /^test\./,            d1.instance.remove_tag_prefix
+      assert_equal 'value',              d1.instance.inner_key          # default value
 
-    # when `inner_key` is set
-    d2 = create_driver(%[
-      key               foo
-      add_tag_prefix    flattened.
-      remove_tag_prefix test.
-      inner_key         value_for_flat_key
-    ])
-
-    assert_equal 'foo',                d2.instance.key
-    assert_equal 'flattened.',         d2.instance.add_tag_prefix
-    assert_equal /^test\./,            d2.instance.remove_tag_prefix
-    assert_equal 'value_for_flat_key', d2.instance.inner_key
-
-    # when `parse_json` is false
-    d3 = create_driver(%[
-      key               foo
-      add_tag_prefix    flattened.
-      remove_tag_prefix test.
-      inner_key         value_for_flat_key
-      parse_json        false
-    ])
-
-    assert_equal 'foo',                d3.instance.key
-    assert_equal 'flattened.',         d3.instance.add_tag_prefix
-    assert_equal /^test\./,            d3.instance.remove_tag_prefix
-    assert_equal 'value_for_flat_key', d3.instance.inner_key
-    assert_equal false,         d3.instance.parse_json
-
-    # when mandatory keys not set
-    assert_raise(Fluent::ConfigError) do
-      create_driver(%[
-        key        foo
-        inner_key  value_for_keypath
+      # when `inner_key` is set
+      d2 = create_driver(%[
+        key               foo
+        add_tag_prefix    flattened.
+        remove_tag_prefix test.
+        inner_key         value_for_flat_key
       ])
+
+      assert_equal 'foo',                d2.instance.key
+      assert_equal 'flattened.',         d2.instance.add_tag_prefix
+      assert_equal /^test\./,            d2.instance.remove_tag_prefix
+      assert_equal 'value_for_flat_key', d2.instance.inner_key
+
+      # when `parse_json` is false
+      d3 = create_driver(%[
+        key               foo
+        add_tag_prefix    flattened.
+        remove_tag_prefix test.
+        inner_key         value_for_flat_key
+        parse_json        false
+      ])
+
+      assert_equal 'foo',                d3.instance.key
+      assert_equal 'flattened.',         d3.instance.add_tag_prefix
+      assert_equal /^test\./,            d3.instance.remove_tag_prefix
+      assert_equal 'value_for_flat_key', d3.instance.inner_key
+      assert_equal false,         d3.instance.parse_json
+
+      # when mandatory keys not set
+      assert_raise(Fluent::ConfigError) do
+        create_driver(%[
+          key        foo
+          inner_key  value_for_keypath
+        ])
+      end
     end
-  end
   end
 
   def test_flatten
