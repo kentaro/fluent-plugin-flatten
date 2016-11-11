@@ -1,11 +1,13 @@
 require 'json'
 
-module Fluent
-  class FlattenOutput < Output
+module Fluent::Plugin
+  class FlattenOutput < Fluent::Plugin::Output
     include Fluent::HandleTagNameMixin
     class Error < StandardError; end
 
     Fluent::Plugin.register_output('flatten', self)
+
+    helpers :event_emitter
 
     desc "The key is used to point a key whose value contains JSON-formatted string."
     config_param :key, :string
@@ -25,11 +27,11 @@ module Fluent
           !add_tag_prefix    &&
           !add_tag_suffix
       )
-        raise ConfigError, "out_flatten: At least one of remove_tag_prefix/remove_tag_suffix/add_tag_prefix/add_tag_suffix is required to be set"
+        raise Fluent::ConfigError, "out_flatten: At least one of remove_tag_prefix/remove_tag_suffix/add_tag_prefix/add_tag_suffix is required to be set"
       end
     end
 
-    def emit(tag, es, chain)
+    def process(tag, es)
       es.each do |time, record|
         flattened = flatten(record)
 
@@ -43,8 +45,6 @@ module Fluent
           end
         end
       end
-
-      chain.next
     end
 
     def flatten(record)
