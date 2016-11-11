@@ -10,11 +10,11 @@ module Fluent
     desc "The key is used to point a key whose value contains JSON-formatted string."
     config_param :key, :string
     desc "This plugin sets `value` for this option as a default if it's not set."
-    config_param :inner_key, :string, :default => 'value'
+    config_param :inner_key, :string, default: 'value'
     desc "Parse json record."
-    config_param :parse_json, :bool, :default => true
+    config_param :parse_json, :bool, default: true
     desc "Replaces spaces in the resulting tag with the key passed"
-    config_param :replace_space_in_tag, :string, :default => nil
+    config_param :replace_space_in_tag, :string, default: nil
 
     def configure(conf)
       super
