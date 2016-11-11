@@ -15,6 +15,7 @@ class FlattenOutputTest < Test::Unit::TestCase
     Fluent::Test::Driver::Output.new(Fluent::Plugin::FlattenOutput).configure(conf)
   end
 
+  sub_test_case "configure" do
   def test_configure
     # when `inner_key` option is not set
     d1 = create_driver
@@ -59,6 +60,7 @@ class FlattenOutputTest < Test::Unit::TestCase
         inner_key  value_for_keypath
       ])
     end
+  end
   end
 
   def test_flatten
