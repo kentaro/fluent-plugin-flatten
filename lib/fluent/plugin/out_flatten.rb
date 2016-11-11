@@ -12,18 +12,14 @@ module Fluent
       define_method("router") { Fluent::Engine }
     end
 
-    config_param :key,        :string,
-                 :desc => <<-DESC
-The key is used to point a key whose value contains JSON-formatted string.
-DESC
-    config_param :inner_key,  :string, :default => 'value',
-                 :desc => <<-DESC
-This plugin sets `value` for this option as a default if it's not set.
-DESC
-    config_param :parse_json, :bool,   :default => true,
-                 :desc => "Parse json record."
-    config_param :replace_space_in_tag, :string,   :default => nil,
-                 :desc => "Replaces spaces in the resulting tag with the key passed"
+    desc "The key is used to point a key whose value contains JSON-formatted string."
+    config_param :key, :string
+    desc "This plugin sets `value` for this option as a default if it's not set."
+    config_param :inner_key, :string, :default => 'value'
+    desc "Parse json record."
+    config_param :parse_json, :bool, :default => true
+    desc "Replaces spaces in the resulting tag with the key passed"
+    config_param :replace_space_in_tag, :string, :default => nil
 
     def configure(conf)
       super
