@@ -95,6 +95,7 @@ class FlattenOutputTest < Test::Unit::TestCase
     end
   end
 
+  sub_test_case "emit" do
   def test_emit
     # test1 default config
     d1 = create_driver
@@ -164,5 +165,6 @@ class FlattenOutputTest < Test::Unit::TestCase
     # ["flattened.foo.hoe_baz", 1354689632, {"value"=>"baz"}]
     assert_equal      'flattened.foo.hoe_baz', events2[5][0]
     assert_equal                        'poe', events2[5][2]['value']
+  end
   end
 end
