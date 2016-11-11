@@ -26,17 +26,17 @@ class FlattenOutputTest < Test::Unit::TestCase
     end
 
     test "when `inner_key` is set" do
-       d2 = create_driver(%[
-         key               foo
-         add_tag_prefix    flattened.
-         remove_tag_prefix test.
-         inner_key         value_for_flat_key
-       ])
+      d2 = create_driver(%[
+        key               foo
+        add_tag_prefix    flattened.
+        remove_tag_prefix test.
+        inner_key         value_for_flat_key
+      ])
 
-       assert_equal 'foo',                d2.instance.key
-       assert_equal 'flattened.',         d2.instance.add_tag_prefix
-       assert_equal /^test\./,            d2.instance.remove_tag_prefix
-       assert_equal 'value_for_flat_key', d2.instance.inner_key
+      assert_equal 'foo',                d2.instance.key
+      assert_equal 'flattened.',         d2.instance.add_tag_prefix
+      assert_equal /^test\./,            d2.instance.remove_tag_prefix
+      assert_equal 'value_for_flat_key', d2.instance.inner_key
     end
 
     test "when `parse_json` is false" do
