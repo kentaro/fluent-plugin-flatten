@@ -65,24 +65,34 @@ class FlattenOutputTest < Test::Unit::TestCase
     end
   end
 
-  def test_flatten
-    d = create_driver
+  sub_test_case "flatten" do
+    test "plain" do
+      d = create_driver
 
-    flattened = d.instance.flatten({ 'foo' => '{"bar" : "baz"}', 'hoge' => 'fuga' })
-    assert_equal({ 'foo.bar' => { 'value' => 'baz' } }, flattened)
+      flattened = d.instance.flatten({ 'foo' => '{"bar" : "baz"}', 'hoge' => 'fuga' })
+      assert_equal({ 'foo.bar' => { 'value' => 'baz' } }, flattened)
+    end
 
-    # XXX work-around
-    # fluentd seems to escape json value excessively
-    flattened = d.instance.flatten({ 'foo' => '{\"bar\" : \"baz\"}' })
-    assert_equal({ 'foo.bar' => { 'value' => 'baz' } }, flattened)
+    test "excessively escaped json value" do
+      d = create_driver
 
-    # when empty value is passed
-    flattened = d.instance.flatten({ 'foo' => '' })
-    assert_equal({}, flattened)
+      # XXX work-around
+      # fluentd seems to escape json value excessively
+      flattened = d.instance.flatten({ 'foo' => '{\"bar\" : \"baz\"}' })
+      assert_equal({ 'foo.bar' => { 'value' => 'baz' } }, flattened)
+    end
 
-    # when invalid json value is passed
-    flattened = d.instance.flatten({ 'foo' => '-' })
-    assert_equal({}, flattened)
+    test "empty" do
+      d = create_driver
+      flattened = d.instance.flatten({ 'foo' => '' })
+      assert_equal({}, flattened)
+    end
+
+    test "invalid json" do
+      d = create_driver
+      flattened = d.instance.flatten({ 'foo' => '-' })
+      assert_equal({}, flattened)
+    end
   end
 
   def test_emit
