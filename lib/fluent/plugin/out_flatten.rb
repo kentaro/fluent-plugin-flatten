@@ -7,11 +7,6 @@ module Fluent
 
     Fluent::Plugin.register_output('flatten', self)
 
-    # Define `router` method of v0.12 to support v0.10 or earlier
-    unless method_defined?(:router)
-      define_method("router") { Fluent::Engine }
-    end
-
     desc "The key is used to point a key whose value contains JSON-formatted string."
     config_param :key, :string
     desc "This plugin sets `value` for this option as a default if it's not set."
