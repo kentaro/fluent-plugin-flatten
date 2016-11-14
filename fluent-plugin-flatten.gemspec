@@ -1,6 +1,6 @@
 Gem::Specification.new do |gem|
   gem.name          = 'fluent-plugin-flatten'
-  gem.version       = '0.0.10'
+  gem.version       = '0.1.0'
   gem.authors       = ['Kentaro Kuribayashi']
   gem.email         = ['kentarok@gmail.com']
   gem.homepage      = 'http://github.com/kentaro/fluent-plugin-flatten'
