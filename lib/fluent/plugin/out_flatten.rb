@@ -1,29 +1,22 @@
 require 'json'
 
-module Fluent
-  class FlattenOutput < Output
+module Fluent::Plugin
+  class FlattenOutput < Fluent::Plugin::Output
     include Fluent::HandleTagNameMixin
     class Error < StandardError; end
 
     Fluent::Plugin.register_output('flatten', self)
 
-    # Define `router` method of v0.12 to support v0.10 or earlier
-    unless method_defined?(:router)
-      define_method("router") { Fluent::Engine }
-    end
+    helpers :event_emitter
 
-    config_param :key,        :string,
-                 :desc => <<-DESC
-The key is used to point a key whose value contains JSON-formatted string.
-DESC
-    config_param :inner_key,  :string, :default => 'value',
-                 :desc => <<-DESC
-This plugin sets `value` for this option as a default if it's not set.
-DESC
-    config_param :parse_json, :bool,   :default => true,
-                 :desc => "Parse json record."
-    config_param :replace_space_in_tag, :string,   :default => nil,
-                 :desc => "Replaces spaces in the resulting tag with the key passed"
+    desc "The key is used to point a key whose value contains JSON-formatted string."
+    config_param :key, :string
+    desc "This plugin sets `value` for this option as a default if it's not set."
+    config_param :inner_key, :string, default: 'value'
+    desc "Parse json record."
+    config_param :parse_json, :bool, default: true
+    desc "Replaces spaces in the resulting tag with the key passed"
+    config_param :replace_space_in_tag, :string, default: nil
 
     def configure(conf)
       super
@@ -34,11 +27,11 @@ DESC
           !add_tag_prefix    &&
           !add_tag_suffix
       )
-        raise ConfigError, "out_flatten: At least one of remove_tag_prefix/remove_tag_suffix/add_tag_prefix/add_tag_suffix is required to be set"
+        raise Fluent::ConfigError, "out_flatten: At least one of remove_tag_prefix/remove_tag_suffix/add_tag_prefix/add_tag_suffix is required to be set"
       end
     end
 
-    def emit(tag, es, chain)
+    def process(tag, es)
       es.each do |time, record|
         flattened = flatten(record)
 
@@ -52,8 +45,6 @@ DESC
           end
         end
       end
-
-      chain.next
     end
 
     def flatten(record)
