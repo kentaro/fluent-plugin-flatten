@@ -31,6 +31,10 @@ module Fluent::Plugin
       end
     end
 
+    def multi_workers_ready?
+      true
+    end
+
     def process(tag, es)
       es.each do |time, record|
         flattened = flatten(record)
