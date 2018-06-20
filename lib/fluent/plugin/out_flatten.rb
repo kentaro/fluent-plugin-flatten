@@ -1,4 +1,5 @@
 require 'json'
+require 'fluent/plugin/output'
 
 module Fluent::Plugin
   class FlattenOutput < Fluent::Plugin::Output
