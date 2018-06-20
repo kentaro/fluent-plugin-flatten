@@ -18,6 +18,10 @@ module Fluent::Plugin
     desc "Replaces spaces in the resulting tag with the key passed"
     config_param :replace_space_in_tag, :string, default: nil
 
+    def multi_workers_ready?
+      true
+    end
+
     def process(tag, es)
       es.each do |time, record|
         flattened = flatten(record)
